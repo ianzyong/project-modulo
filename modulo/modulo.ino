@@ -1,3 +1,7 @@
+#if defined(__IMXRT1062__)
+extern "C" uint32_t set_arm_clock(uint32_t frequency);
+#endif
+
 const int read_pin = A5;
 const int haptic_pin = A0;
 int force_val = 0; // variable to store the read value
@@ -22,14 +26,18 @@ float c = 787.4*2;
 // A0-A4: haptic motors
 // A5-A9: force-sensitive resistors
 
-// extern "C" uint32_t set_arm_clock(uint32_t frequency);
-
 void setup() {
   // set_arm_clock(24000000);
   // put your setup code here, to run once:
   pinMode(read_pin, INPUT); // sets the digital pin as input
-  Serial.begin(9600);
   pinMode(haptic_pin, OUTPUT); // sets the haptic pin as output
+  Serial.begin(9600);
+  while (!Serial) ;
+#if defined(__IMXRT1062__)
+    set_arm_clock(24000000);
+    Serial.print("F_CPU_ACTUAL=");
+    Serial.println(F_CPU_ACTUAL);
+#endif
 }
 
 void loop() {
