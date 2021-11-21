@@ -6,9 +6,10 @@ unsigned long previousMillis=0;
 
 const int read_pin = A5;
 const int haptic_pin = A0;
-const int button_pin = 2;
+const int button_pin = 11;
+int button_state = 0;
 int force_val = 0; // variable to store the read value
-int force_threshold = 0; // force threshold value
+int force_threshold = 597; // force threshold value
 int mode = 0;
 float force_total = 0;
 float newtons_total = 0;
@@ -40,9 +41,9 @@ void setup() {
   Serial.begin(9600);
   while (!Serial) ;
 #if defined(__IMXRT1062__)
-    set_arm_clock(24000000);
-    Serial.print("F_CPU_ACTUAL=");
-    Serial.println(F_CPU_ACTUAL);
+    set_arm_clock(16000000);
+    //Serial.print("F_CPU_ACTUAL=");
+    //Serial.println(F_CPU_ACTUAL);
 #endif
 }
 
@@ -59,15 +60,21 @@ void loop() {
   // put your main code here, to run repeatedly:
 
   button_state = digitalRead(button_pin); // read the button state
-  if(button_state == 1) { // button is pressed
-    while(button_state == 1) { // wait until the button is released
-      delay(delay_time);
+  //Serial.print(button_state);
+  //Serial.print(",  ");
+  if(button_state == 0) { // button is pressed
+    while(button_state == 0) { // wait until the button is released
+      delay(1);
+      button_state = digitalRead(button_pin);
     }
     if (mode < 2) {
       mode = mode + 1;
     } else {
       mode = 0;
     }
+    //Serial.print("===== ");
+    Serial.println(mode);
+    //Serial.println(" =====");
   }
   
   force_val = analogRead(read_pin); // read the force
@@ -95,15 +102,15 @@ void loop() {
     newtons = max_newtons; // transformed force is set to max if it exceeds the max
   }
 
-  if (newtons > force_threshold) {
+  if (force_val > force_threshold) {
     if (mode == 0) { // PWM
       analogWrite(haptic_pin, force_val*0.35);
       //analogWrite(haptic_pin, (newtons/max_newtons)*255);
       //analogWrite(haptic_pin, (force_val/1023)*255);
     } else if (mode == 1) { // frequency modulation
-      tone(haptic_pin, force_val/10)
+      tone(haptic_pin, force_val/10);
     } else if (mode == 2) { // PWM + frequency modulation
-      period = (1000*10)/force_val
+      period = (1000*10)/force_val;
       analogWrite(haptic_pin, force_val*0.35);
       delay(period/2);
       analogWrite(haptic_pin, force_val*0.35);
