@@ -9,7 +9,7 @@ const int haptic_pin = A0;
 const int button_pin = 11;
 int button_state = 0;
 int force_val = 0; // variable to store the read value
-int force_threshold = 597; // force threshold value
+int force_threshold = 0.15; // force threshold value
 int mode = 0;
 float force_total = 0;
 float newtons_total = 0;
@@ -25,9 +25,17 @@ float period = 1000; // milliseconds
 //float b = -0.4256;
 //float c = 787.4*2;
 
-float a = -300.5;
-float b = -0.5;
-float c = 787.4*2;
+//float a = -300.5;
+//float b = -0.5;
+//float c = 787.4*2;
+
+// power fit
+//float a = 736.74;
+//float b = 0.1011;
+
+// log fit
+float a = 79.697;
+float b = 753.68;
 
 // A0-A4: haptic motors
 // A5-A9: force-sensitive resistors
@@ -72,17 +80,19 @@ void loop() {
     } else {
       mode = 0;
     }
-    //Serial.print("===== ");
+    Serial.print("===== ");
     Serial.println(mode);
-    //Serial.println(" =====");
+    Serial.println(" =====");
   }
   
   force_val = analogRead(read_pin); // read the force
+  newtons = exp((force_val-b)/a);
+  //Serial.println(newtons);
   force_total = force_total + force_val;
   num_reads = num_reads + 1;
 
   //newtons = pow((force_val-c)/a,1);
-  newtons = pow((force_val-c)/a,1/b); // power transform
+  //newtons = pow((force_val-c)/a,1/b); // power transform
   //newtons = force_val;
   newtons_total = newtons_total + newtons;
   //Serial.println(force_val);
@@ -102,10 +112,16 @@ void loop() {
     newtons = max_newtons; // transformed force is set to max if it exceeds the max
   }
 
-  if (force_val > force_threshold) {
+  if (newtons > force_threshold) {
     if (mode == 0) { // PWM
-      analogWrite(haptic_pin, force_val*0.35);
+      //analogWrite(haptic_pin, force_val*0.35);
       //analogWrite(haptic_pin, (newtons/max_newtons)*255);
+      analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,75,400));
+      Serial.print(force_val);
+      Serial.print(", ");
+      Serial.print(newtons);
+      Serial.print(", ");
+      Serial.println(map(newtons,force_threshold,max_newtons,75,400));
       //analogWrite(haptic_pin, (force_val/1023)*255);
     } else if (mode == 1) { // frequency modulation
       tone(haptic_pin, force_val/10);
