@@ -114,30 +114,90 @@ void loop() {
 
   if (newtons > force_threshold) {
     if (mode == 0) { // PWM
+      Serial.println("MODE 0");
       //analogWrite(haptic_pin, force_val*0.35);
       //analogWrite(haptic_pin, (newtons/max_newtons)*255);
-      analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,75,400));
+
+      //analogWrite(haptic_pin, map(force_val,590,1024,75,255));
+      analogWriteFrequency(haptic_pin, 25000);
+      analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,1000));
+      
       Serial.print(force_val);
       Serial.print(", ");
-      Serial.print(newtons);
-      Serial.print(", ");
-      Serial.println(map(newtons,force_threshold,max_newtons,75,400));
+      //Serial.print(newtons);
+      //Serial.print(", ");
+      Serial.println(map(newtons,force_threshold,max_newtons,100,1000));
+      //Serial.println(map(force_val,590,1024,75,255));
+      
       //analogWrite(haptic_pin, (force_val/1023)*255);
     } else if (mode == 1) { // frequency modulation
-      tone(haptic_pin, force_val/10);
+      //tone(haptic_pin, force_val/10);
+      Serial.println("MODE 1");
+      analogWrite(haptic_pin, 0);
+
+      if (map(newtons,force_threshold,max_newtons,0.1,5) > 0.5){
+      
+        analogWriteFrequency(haptic_pin, map(newtons,force_threshold,max_newtons,0.1,5));
+  
+        //float freq = map(newtons,force_threshold,max_newtons,0.001,5);
+        //float delay_time = (1.0/freq)*1000/2;
+        //delay(delay_time);
+        
+        analogWrite(haptic_pin, 170);
+        
+        //delay(delay_time);
+        //Serial.print(delay_time);
+        
+        //Serial.print(", ");
+        Serial.print(map(newtons,force_threshold,max_newtons,0.1,5));
+        Serial.print(", ");
+        Serial.println(map(newtons,force_threshold,max_newtons,100,300));
+        //period = (1000*10)/force_val;
+        //analogWrite(haptic_pin, force_val*0.35);
+        //delay(period/2);
+        //analogWrite(haptic_pin, force_val*0.35);
+        //delay(period/2);
+  //      unsigned long currentMillis = millis();
+  //      if ((unsigned long)(currentMillis - previousMillis) >= interval) {
+  //        previousMillis = currentMillis;
+  //      }
+      }
     } else if (mode == 2) { // PWM + frequency modulation
-      period = (1000*10)/force_val;
-      analogWrite(haptic_pin, force_val*0.35);
-      delay(period/2);
-      analogWrite(haptic_pin, force_val*0.35);
-      delay(period/2);
-//      unsigned long currentMillis = millis();
-//      if ((unsigned long)(currentMillis - previousMillis) >= interval) {
-//        previousMillis = currentMillis;
-//      }
+      Serial.println("MODE 2");
+
+      analogWrite(haptic_pin, 0);
+
+      if (map(newtons,force_threshold,max_newtons,0.1,5) > 0.5){
+      
+        analogWriteFrequency(haptic_pin, map(newtons,force_threshold,max_newtons,0.1,5));
+  
+        //float freq = map(newtons,force_threshold,max_newtons,0.001,5);
+        //float delay_time = (1.0/freq)*1000/2;
+        //delay(delay_time);
+        
+        analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,250));
+        
+        //delay(delay_time);
+        //Serial.print(delay_time);
+        
+        //Serial.print(", ");
+        Serial.print(map(newtons,force_threshold,max_newtons,0.1,5));
+        Serial.print(", ");
+        Serial.println(map(newtons,force_threshold,max_newtons,100,250));
+        //period = (1000*10)/force_val;
+        //analogWrite(haptic_pin, force_val*0.35);
+        //delay(period/2);
+        //analogWrite(haptic_pin, force_val*0.35);
+        //delay(period/2);
+  //      unsigned long currentMillis = millis();
+  //      if ((unsigned long)(currentMillis - previousMillis) >= interval) {
+  //        previousMillis = currentMillis;
+  //      }
+      }
+      
     }
   } else {
-    analogWrite(haptic_pin, 0); // 
+    digitalWrite(haptic_pin, LOW); // 
   }
 
 }
