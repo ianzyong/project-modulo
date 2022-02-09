@@ -20,19 +20,6 @@ float max_newtons = 20; // linear force value corresponding to maximum vibration
 // according to our load specification (60 lbs), this should be 266.893 N
 float period = 1000; // milliseconds
 
-// curve-fitting constants
-//float a = -295.5;
-//float b = -0.4256;
-//float c = 787.4*2;
-
-//float a = -300.5;
-//float b = -0.5;
-//float c = 787.4*2;
-
-// power fit
-//float a = 736.74;
-//float b = 0.1011;
-
 // log fit
 float a = 79.697;
 float b = 753.68;
@@ -41,7 +28,6 @@ float b = 753.68;
 // A5-A9: force-sensitive resistors
 
 void setup() {
-  // set_arm_clock(24000000);
   // put your setup code here, to run once:
   pinMode(read_pin, INPUT); // sets the digital pin as input
   pinMode(button_pin, INPUT);
@@ -56,20 +42,11 @@ void setup() {
 }
 
 void loop() {
-
-//int counter = 0;
-//while(true){
-//  counter = counter + 1;
-//  delay(1000);
-//  Serial.println(counter);
-//}
   
   delay(5); // time delay
   // put your main code here, to run repeatedly:
 
   button_state = digitalRead(button_pin); // read the button state
-  //Serial.print(button_state);
-  //Serial.print(",  ");
   if(button_state == 0) { // button is pressed
     while(button_state == 0) { // wait until the button is released
       delay(1);
@@ -87,22 +64,13 @@ void loop() {
   
   force_val = analogRead(read_pin); // read the force
   newtons = exp((force_val-b)/a);
-  //Serial.println(newtons);
+
   force_total = force_total + force_val;
   num_reads = num_reads + 1;
 
-  //newtons = pow((force_val-c)/a,1);
-  //newtons = pow((force_val-c)/a,1/b); // power transform
-  //newtons = force_val;
   newtons_total = newtons_total + newtons;
-  //Serial.println(force_val);
-  //Serial.print(", ");
-  //Serial.println(newtons);
 
   if (num_reads == avg_num) {
-    //Serial.print(force_total/avg_num); // report moving average of force
-    //Serial.print(", ");
-    //Serial.println(newtons/avg_num);
     num_reads = 0;
     force_total = 0;
     newtons_total = 0;
@@ -115,52 +83,28 @@ void loop() {
   if (newtons > force_threshold) {
     if (mode == 0) { // PWM
       Serial.println("MODE 0");
-      //analogWrite(haptic_pin, force_val*0.35);
-      //analogWrite(haptic_pin, (newtons/max_newtons)*255);
 
-      //analogWrite(haptic_pin, map(force_val,590,1024,75,255));
       analogWriteFrequency(haptic_pin, 25000);
       analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,1000));
       
       Serial.print(force_val);
       Serial.print(", ");
-      //Serial.print(newtons);
-      //Serial.print(", ");
       Serial.println(map(newtons,force_threshold,max_newtons,100,1000));
-      //Serial.println(map(force_val,590,1024,75,255));
       
-      //analogWrite(haptic_pin, (force_val/1023)*255);
     } else if (mode == 1) { // frequency modulation
-      //tone(haptic_pin, force_val/10);
       Serial.println("MODE 1");
       analogWrite(haptic_pin, 0);
 
       if (map(newtons,force_threshold,max_newtons,0.1,5) > 0.5){
       
         analogWriteFrequency(haptic_pin, map(newtons,force_threshold,max_newtons,0.1,5));
-  
-        //float freq = map(newtons,force_threshold,max_newtons,0.001,5);
-        //float delay_time = (1.0/freq)*1000/2;
-        //delay(delay_time);
         
         analogWrite(haptic_pin, 170);
-        
-        //delay(delay_time);
-        //Serial.print(delay_time);
-        
-        //Serial.print(", ");
+
         Serial.print(map(newtons,force_threshold,max_newtons,0.1,5));
         Serial.print(", ");
         Serial.println(map(newtons,force_threshold,max_newtons,100,300));
-        //period = (1000*10)/force_val;
-        //analogWrite(haptic_pin, force_val*0.35);
-        //delay(period/2);
-        //analogWrite(haptic_pin, force_val*0.35);
-        //delay(period/2);
-  //      unsigned long currentMillis = millis();
-  //      if ((unsigned long)(currentMillis - previousMillis) >= interval) {
-  //        previousMillis = currentMillis;
-  //      }
+        
       }
     } else if (mode == 2) { // PWM + frequency modulation
       Serial.println("MODE 2");
@@ -170,29 +114,13 @@ void loop() {
       if (map(newtons,force_threshold,max_newtons,0.1,5) > 0.5){
       
         analogWriteFrequency(haptic_pin, map(newtons,force_threshold,max_newtons,0.1,5));
-  
-        //float freq = map(newtons,force_threshold,max_newtons,0.001,5);
-        //float delay_time = (1.0/freq)*1000/2;
-        //delay(delay_time);
         
         analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,250));
-        
-        //delay(delay_time);
-        //Serial.print(delay_time);
-        
-        //Serial.print(", ");
+
         Serial.print(map(newtons,force_threshold,max_newtons,0.1,5));
         Serial.print(", ");
         Serial.println(map(newtons,force_threshold,max_newtons,100,250));
-        //period = (1000*10)/force_val;
-        //analogWrite(haptic_pin, force_val*0.35);
-        //delay(period/2);
-        //analogWrite(haptic_pin, force_val*0.35);
-        //delay(period/2);
-  //      unsigned long currentMillis = millis();
-  //      if ((unsigned long)(currentMillis - previousMillis) >= interval) {
-  //        previousMillis = currentMillis;
-  //      }
+        
       }
       
     }
