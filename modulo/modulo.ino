@@ -10,15 +10,19 @@ const int button_pin = 11;
 int button_state = 0;
 int force_val = 0; // variable to store the read value
 int force_threshold = 0.15; // force threshold value
+int del_threshold = 0.01; // delta threshold value
+int del_max = 10;
 int mode = 0;
 float force_total = 0;
 float newtons_total = 0;
 int num_reads = 0;
 int avg_num = 40; // for reporting moving average
 float newtons = 0; // to hold the transformed force value
+float del_newtons = 0;
 float max_newtons = 20; // linear force value corresponding to maximum vibration
 // according to our load specification (60 lbs), this should be 266.893 N
-float period = 1000; // milliseconds
+float period = 1000; // 
+float del_force_val = 0;
 
 // log fit
 float a = 79.697;
@@ -61,9 +65,12 @@ void loop() {
     Serial.println(mode);
     Serial.println(" =====");
   }
-  
+
+  del_force_val = abs(analogRead(read_pin) - force_val);
   force_val = analogRead(read_pin); // read the force
+  del_newtons = exp((del_force_val-b)/a);
   newtons = exp((force_val-b)/a);
+  
 
   force_total = force_total + force_val;
   num_reads = num_reads + 1;
@@ -91,21 +98,27 @@ void loop() {
       Serial.print(", ");
       Serial.println(map(newtons,force_threshold,max_newtons,100,1000));
       
-    } else if (mode == 1) { // frequency modulation
+    } else if (mode == 1) { // delta modulation
       Serial.println("MODE 1");
+
       analogWrite(haptic_pin, 0);
+      analogWriteFrequency(haptic_pin, 25000);
 
-      if (map(newtons,force_threshold,max_newtons,0.1,5) > 0.5){
+      if (del_newtons > del_threshold) {
       
-        analogWriteFrequency(haptic_pin, map(newtons,force_threshold,max_newtons,0.1,5));
-        
-        analogWrite(haptic_pin, 170);
-
-        Serial.print(map(newtons,force_threshold,max_newtons,0.1,5));
+        analogWrite(haptic_pin, map(del_force_val,0,del_max,100,1000));
+        Serial.print(del_force_val);
         Serial.print(", ");
-        Serial.println(map(newtons,force_threshold,max_newtons,100,300));
-        
+        Serial.print(del_newtons);
+        Serial.print(", ");
+        Serial.println(map(del_force_val,0,del_max,100,1000));
+
+      } else {
+        Serial.print(del_force_val);
+        Serial.print(", ");
+        Serial.println(del_newtons);
       }
+      
     } else if (mode == 2) { // PWM + frequency modulation
       Serial.println("MODE 2");
 
