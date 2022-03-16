@@ -11,6 +11,7 @@ const int led1_pin = 2;
 const int led2_pin = 3;
 const int red_led_pin = 4;
 const int battery_pin = 15;
+const int led_brightness = 1;
 int button_state = 0;
 int force_val = 0; // variable to store the read value
 int force_threshold = 0.15; // force threshold value
@@ -57,12 +58,13 @@ void setup() {
 }
 
 void loop() {
- 
   // if battery is low
-  if (analogRead(100*(battery_pin/573.5) < low_batt_per)) {
-    digitalWrite(battery_pin, HIGH);
+  if (100*analogRead(battery_pin)/573.5 < low_batt_per) {
+    //digitalWrite(red_led_pin, HIGH);
+    analogWrite(red_led_pin, led_brightness);
   } else {
-    digitalWrite(battery_pin, LOW);
+    //digitalWrite(red_led_pin, LOW);
+    analogWrite(red_led_pin, 0);
   }
   
   delay(5); // time delay
@@ -72,12 +74,16 @@ void loop() {
   if(button_state == 0) { // button is pressed
     // turn on LEDs to indicate mode
     if (mode == 0) {
-      digitalWrite(led1_pin, HIGH);
+      analogWrite(led2_pin, led_brightness);
+      //digitalWrite(led1_pin, HIGH);
     } else if (mode == 1) {
-      digitalWrite(led2_pin, HIGH);
+      analogWrite(led1_pin, led_brightness);
+      analogWrite(led2_pin, led_brightness);
+      //digitalWrite(led2_pin, HIGH);
     } else if (mode == 2) {
-      digitalWrite(led1_pin, HIGH);
-      digitalWrite(led2_pin, HIGH);
+      analogWrite(led1_pin, led_brightness);
+      //digitalWrite(led1_pin, HIGH);
+      //digitalWrite(led2_pin, HIGH);
     }
     
     while(button_state == 0) { // wait until the button is released
@@ -87,8 +93,11 @@ void loop() {
 
     // turn off LEDs
 
-    digitalWrite(led1_pin, LOW);
-    digitalWrite(led2_pin, LOW);
+    analogWrite(led1_pin, 0);
+    analogWrite(led2_pin, 0);
+
+    //digitalWrite(led1_pin, LOW);
+    //digitalWrite(led2_pin, LOW);
     
     if (mode < 2) {
       mode = mode + 1;
@@ -126,11 +135,11 @@ void loop() {
       Serial.println("MODE 0");
 
       analogWriteFrequency(haptic_pin, 25000);
-      analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,1000));
+      analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,1023));
       
       Serial.print(force_val);
       Serial.print(", ");
-      Serial.println(map(newtons,force_threshold,max_newtons,100,1000));
+      Serial.println(map(newtons,force_threshold,max_newtons,100,1023));
       
     } else if (mode == 1) { // delta modulation
       Serial.println("MODE 1");
@@ -143,21 +152,22 @@ void loop() {
         if (countdown == 0) {
           countdown = countdown_max;
         }
-
-        analogWrite(haptic_pin, 1024);
+        analogWrite(haptic_pin, 255);
         //analogWrite(haptic_pin, map(del_force_val,0,del_max,500,1000));
+        //Serial.print(del_force_val);
+        //Serial.print(", ");
+        //Serial.print("del_input:");
         Serial.print(del_force_val);
         Serial.print(", ");
-        Serial.print(del_newtons);
-        Serial.print(", ");
-        Serial.println(1024);
+        //Serial.print("output:");
+        Serial.println(255);
 
         countdown = countdown - 1;
 
       } else {
         Serial.print(del_force_val);
         Serial.print(", ");
-        Serial.println(del_newtons);
+        Serial.println(0);
       }
       
     } else if (mode == 2) { // PWM + frequency modulation
