@@ -14,7 +14,7 @@ const int battery_pin = 15;
 const int led_brightness = 1;
 int button_state = 0;
 int force_val = 0; // variable to store the read value
-int force_threshold = 0.15; // force threshold value
+int force_threshold = 0.05; // force threshold value
 int del_threshold = 3; // delta threshold value
 int del_max = 10;
 int mode = 0;
@@ -49,12 +49,12 @@ void setup() {
   pinMode(led2_pin, OUTPUT);
   pinMode(red_led_pin, OUTPUT);
   Serial.begin(9600);
-  while (!Serial) ;
-#if defined(__IMXRT1062__)
-    set_arm_clock(16000000);
+  //while (!Serial) ;
+//#if defined(__IMXRT1062__)
+    //set_arm_clock(16000000);
     //Serial.print("F_CPU_ACTUAL=");
     //Serial.println(F_CPU_ACTUAL);
-#endif
+//#endif
 }
 
 void loop() {
@@ -135,7 +135,7 @@ void loop() {
       Serial.println("MODE 0");
 
       analogWriteFrequency(haptic_pin, 25000);
-      analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,1023));
+      analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,2023));
       
       Serial.print(force_val);
       Serial.print(", ");
@@ -179,7 +179,7 @@ void loop() {
       
         analogWriteFrequency(haptic_pin, map(newtons,force_threshold,max_newtons,0.1,5));
         
-        analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,250));
+        analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,2050));
 
         Serial.print(map(newtons,force_threshold,max_newtons,0.1,5));
         Serial.print(", ");
