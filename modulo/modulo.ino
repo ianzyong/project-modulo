@@ -14,7 +14,7 @@ const int battery_pin = 15;
 const int led_brightness = 1;
 int button_state = 0;
 int force_val = 0; // variable to store the read value
-int force_threshold = 0.05; // force threshold value
+int force_threshold = 0.02; // force threshold value
 int del_threshold = 3; // delta threshold value
 int del_max = 10;
 int mode = 0;
@@ -135,7 +135,7 @@ void loop() {
       Serial.println("MODE 0");
 
       analogWriteFrequency(haptic_pin, 25000);
-      analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,2023));
+      analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,120,4023));
       
       Serial.print(force_val);
       Serial.print(", ");
@@ -173,19 +173,13 @@ void loop() {
     } else if (mode == 2) { // PWM + frequency modulation
       Serial.println("MODE 2");
 
-      analogWrite(haptic_pin, 0);
-
-      if (map(newtons,force_threshold,max_newtons,0.1,5) > 0.5){
-      
-        analogWriteFrequency(haptic_pin, map(newtons,force_threshold,max_newtons,0.1,5));
+      analogWriteFrequency(haptic_pin, map(newtons,force_threshold,max_newtons,0.1,5));
         
-        analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,2050));
+      analogWrite(haptic_pin, map(newtons,force_threshold,max_newtons,100,4050));
 
-        Serial.print(map(newtons,force_threshold,max_newtons,0.1,5));
-        Serial.print(", ");
-        Serial.println(map(newtons,force_threshold,max_newtons,100,250));
-        
-      }
+      Serial.print(map(newtons,force_threshold,max_newtons,0.1,5));
+      Serial.print(", ");
+      Serial.println(map(newtons,force_threshold,max_newtons,100,250));
       
     }
   } else {
